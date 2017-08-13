@@ -1,0 +1,12 @@
+.. _toc:
+
+================
+Table Of Content
+================
+
+.. toctree::
+
+    /disp32x8
+    /dev
+    /tests
+    /changelog

@@ -1,0 +1,89 @@
+{
+   "json_version": 2,
+
+   "identity": {
+      "author": "vdomos", 
+      "author_email": "domos pt vesta at gmail.com", 
+      "tags": ["messaging", "notification"], 
+      "dependencies": [],
+      "description": "Domogik Plugin for DIY Sure 32x8 Display", 
+      "domogik_min_version": "0.5.0", 
+      "name": "disp32x8", 
+      "type": "plugin", 
+      "version": "0.2"
+   }, 
+
+   "products" : [],
+
+   "configuration": [],
+
+   "device_types": {
+      "display.32x8": {
+         "id": "display.32x8",
+         "description": "Display 32x8 device", 
+         "name": "Display 32x8",
+         "commands": ["cmnd_osddisplay"],
+         "sensors": [],
+         "parameters": [
+            {
+               "description": "Display's IP Adress/Hostname", 
+               "key": "displayip", 
+               "xpl": false,
+               "type": "string"
+            },      
+            {
+               "description": "Display's IP port", 
+               "key": "displayport", 
+               "xpl": false,
+               "type": "integer",
+               "default": "8888" 
+            },      
+            {
+               "description": "Temp. Int sensor ID", 
+               "key": "tempintsensorid", 
+               "xpl": false,
+               "type": "integer",
+               "default": "" 
+            },      
+            {
+               "description": "Temp. Ext sensor ID", 
+               "key": "tempextsensorid", 
+               "xpl": false,
+               "type": "integer",
+               "default": "" 
+            },      
+            {
+               "description": "Rainfall sensor ID", 
+               "key": "rainsensorid", 
+               "xpl": false,
+               "type": "integer",
+               "default": "" 
+            }
+         ]
+      }
+   },
+
+   "commands": { 
+      "cmnd_osddisplay" : {
+         "name" : "Cmnd osd display",
+         "return_confirmation" : true,
+         "parameters" : [
+            {
+               "key" : "message",
+               "data_type" : "DT_String",
+               "conversion" : ""
+            },
+            {
+               "key" : "type",
+               "data_type" : "DT_String",
+               "conversion" : ""
+            }
+         ]
+      }
+   },
+
+   "sensors": {},
+   
+   "xpl_stats": {},
+   "xpl_commands": {}
+}

@@ -1,0 +1,162 @@
+# -*- coding: utf-8 -*-
+
+""" This file is part of B{Domogik} project (U{http://www.domogik.org}).
+
+License
+=======
+
+B{Domogik} is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+B{Domogik} is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Domogik. If not, see U{http://www.gnu.org/licenses}.
+
+Plugin purpose
+==============
+
+Disp32x8 
+
+Implements
+==========
+
+- Disp32x8
+
+@author: domos  (domos dt vesta at gmail dt com)
+@copyright: (C) 2007-2015 Domogik project
+@license: GPL(v3)
+@organization: Domogik
+"""
+
+import os
+import traceback
+import time
+import datetime
+import locale
+import socket
+
+
+class Disp32x8Exception(Exception):
+    """
+    Disp32x8 exception
+    """
+
+    def __init__(self, value):
+        Exception.__init__(self)
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
+class Disp32x8:
+    """ Disp32x8
+    """
+
+    def __init__(self, log, stop, ip, port, gettemp):
+        """ Init Disp32x8 object
+            @param log : log instance
+            @param send : send
+            @param stop : stop flag
+            @param device_id : domogik device id
+            @param weather_id : Weather location ID
+        """
+        self.log = log
+        self.stop = stop
+        self.displayip = ip
+        self.displayport = port
+        self.gettemp = gettemp
+
+        '''
+        self.log.info("=> Open UDP socket...")
+        try:
+            self.displaysocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        except socket.error:
+            self.log.error("### Failed to create socket")
+            self.force_leave()
+            return
+        self.log.info("=> Socket open.")
+        '''
+
+    # ---------------------------------------------------------------------
+    def write(self, msg):
+        """ 
+            Write message to Disp32x8 board
+        """
+        self.displaysocket.sendto(msg, (self.displayip, self.displayport))
+        resp, addr = self.displaysocket.recvfrom(1024)
+        self.log.debug("=>  Reponse de la carte Disp32x8: '%s'" % resp.rstrip())
+        if "Ack" in resp:
+            self.log.debug("=>  Aquictement reçu")
+        else:
+            self.log.debug("### Pas d'aquictement reçu")
+            return None
+        return 1
+        
+
+    def close(self):
+        """ 
+            Close Disp32x8 UDP connexion
+        """
+        self.displaysocket.close()
+
+
+    def displayTemp(self, id):
+        """ 
+            Affiche t° int ou ext.
+        """
+        temp = self.gettemp(id)
+        if temp != "failed":
+            msg = temp + u"° *\n"
+        else:
+            msg = u"--.-° *\n"
+        self.log.info("=> Demande affichage temp '%s'" % msg.rstrip())
+        # ### self.write(msg)                            # Write message to the Disp32x8 board
+
+
+    def run(self, tempintsensorid, tempextsensorid, osdmsg):
+        """ 
+        """        
+        secondes_courantes = 60
+        offset_affichage = 3
+        x_affichage = 0            # x, y ,z servent au décalage d'affichage.
+        y_affichage = 0 
+        z_affichage = 0
+        
+        locale_fr = locale.setlocale(locale.LC_ALL, '')
+
+        while not self.stop.isSet():
+            maintenant = datetime.datetime.now()
+            secondes = maintenant.second
+            minutes  = maintenant.minute
+            heuresminutes = maintenant.strftime("%k:%M")
+            if secondes_courantes != secondes :
+                #print "=> Seconde : %d" % secondes
+                if osdmsg["message"] != "" :
+                    self.log.info("=> Demande defilement osd texte '%s'" % self.osdmsg)
+                    # ### self.write(self.osdmsg + "%\n")                    # Write message to the Disp32x8 board
+                    osdmsg["message"] = ""
+                    maintenant = datetime.datetime.now()                     # Relit l'heure si message long
+                    heuresminutes = maintenant.strftime("%k:%M")
+                    # ### self.write(heuresminutes + "#" + "\n")             # Write message to the Disp32x8 board
+                if (secondes == 0) or (secondes_courantes == 60) :           # Affichage heure
+                    msg_heure = heuresminutes + "#" + "\n"
+                    time.sleep(1)                                            # C'est l'Arduino qui affiche l'heure 0 seconde, tempo pour ne pas ecraser si decaloge.
+                if secondes == offset_affichage * 1 :                        # Affichage TEMP_INT
+                    self.displayTemp(tempintsensorid)
+                if secondes == offset_affichage * 2 :                        # Affichage TEMP_EXT
+                    self.displayTemp(tempextsensorid)
+                if secondes == offset_affichage * 3 + (x_affichage) :        # Affichage heure
+                    self.log.info("=> R�affichage heure '%s'" % msg_heure.rstrip())
+                    # ### self.write(msg_heure)                              # Write message to the Disp32x8 board
+                secondes_courantes = secondes
+            time.sleep(0.9)
+
+        # ### self.displaysocket.close()
+
