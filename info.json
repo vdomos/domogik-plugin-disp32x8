@@ -22,7 +22,7 @@
          "id": "display.32x8",
          "description": "Display 32x8 device", 
          "name": "Display 32x8",
-         "commands": ["cmnd_osddisplay"],
+         "commands": ["displaymsg"],
          "sensors": [],
          "parameters": [
             {
@@ -64,8 +64,8 @@
    },
 
    "commands": { 
-      "cmnd_osddisplay" : {
-         "name" : "Cmnd osd display",
+      "displaymsg" : {
+         "name" : "Display message",
          "return_confirmation" : true,
          "parameters" : [
             {
@@ -74,7 +74,7 @@
                "conversion" : ""
             },
             {
-               "key" : "type",
+               "key" : "position",
                "data_type" : "DT_String",
                "conversion" : ""
             }
