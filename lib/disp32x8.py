@@ -129,13 +129,13 @@ class Disp32x8:
             Affiche pluviometrie dans l'heure.
         """
         value = self.getsensorvalue(id)
-        if value != "Failed" and value != 0:
-            msg = "%.1fM *\n" % value
+        if value != "Failed" and value != "0.0":
+            msg = "%.1fM *\n" % float(value)
             self.log.info("==> Demande affichage pluviometrie '%s'" % msg.rstrip())
             self.write(msg.encode('utf-8'))                            # Write message to the Disp32x8 board
             return msg
         else:
-            return u""
+            return ""
 
 
     def run(self, tempintsensorid, tempextsensorid, rainsensorid, osdmsg):
@@ -162,6 +162,7 @@ class Disp32x8:
                     heuresminutes = maintenant.strftime("%k:%M")
                     self.write(heuresminutes + "#" + "\n")                   # Write message to the Disp32x8 board
                 if (secondes == 0) or (secondes_courantes == 60) :           # Affichage heure
+                    self.log.debug(u"==> Heure: '%s'" % heuresminutes)
                     msg_heure = heuresminutes + "#" + "\n"
                     time.sleep(1)                                            # C'est l'Arduino qui affiche l'heure 0 seconde, tempo pour ne pas ecraser si decaloge.
                 if secondes == offset_affichage * 1 :                        # Affichage TEMP_INT
@@ -169,7 +170,7 @@ class Disp32x8:
                 if secondes == offset_affichage * 2 :                        # Affichage TEMP_EXT
                     self.displayTemp(tempextsensorid)
                 if secondes == offset_affichage * 3 :                        # Affichage pluvio1h
-                    if self.displayRain():
+                    if self.displayRain(rainsensorid):
                         x_affichage = offset_affichage
                     else:
                         x_affichage = 0                            # A '0' si pas d'affichage pluvio1h.

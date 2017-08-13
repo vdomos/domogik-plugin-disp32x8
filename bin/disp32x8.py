@@ -121,7 +121,7 @@ class Disp32x8Manager(Plugin):
         msg.add_data('sensor_id', id)
         msg.add_data('mode', 'last')
         try:
-            sensor_history = mq_client.request('dbmgr', msg.get(), timeout=10).get()  
+            sensor_history = mq_client.request('admin', msg.get(), timeout=10).get()  
             #self.log.info(u"==> 0MQ REQ/REP: Last sensor history: %s" % format(sensor_history))  # sensor_history est une list   ['sensor_history.result', '{"status": true, "reason": "", "sensor_id": 183, "values": [{"timestamp": 1452017810.0, "value_str": "7.0", "value_num": 7.0}], "mode": "last"}']
             sensor_last = json.loads(sensor_history[1])
             if sensor_last['status'] == True:
