@@ -75,7 +75,6 @@ class Disp32x8Manager(Plugin):
         # self.log.info(u"==> sensors:   %s" % format(self.sensors))	
         # INFO ==> sensors:   {66: {u'set_info_number': 159}}  ('device id': 'sensor name': 'sensor id')
 
-        self.osdmsg = ""
         self.osdmsgtype = {"scroll": "%\n", "left": "@\n", "center": "#\n", "right": "*\n", "beep": "$\n", "time": "!\n"}
         
         # for each device ...
@@ -91,19 +90,18 @@ class Disp32x8Manager(Plugin):
             self.log.info(u"==> Device '%s' (id:%s), address: %s:%d, sensors id tempint: %d, tempext: %d, rain: %d" % 
                           (device_name, device_id, displayip, displayport, tempintsensorid, tempextsensorid, rainsensorid))
             
-            display = Disp32x8(self.log, self.get_stop(), displayip, displayport, self.getMQValue)
+            self.display = Disp32x8(self.log, self.get_stop(), displayip, displayport, self.getMQValue)
             
             threads = {}
             self.log.info(u"Start to run Display loop '{0}'".format(device_name))
             thr_name = "dev_{0}".format(device_id)
             threads[thr_name] = threading.Thread(None,
-                                        display.run,
+                                        self.display.run,
                                         thr_name,
                                             (
                                                 tempintsensorid,
                                                 tempextsensorid,
-                                                rainsensorid,
-                                                self.osdmsg
+                                                rainsensorid
                                             ),
                                         {})
             threads[thr_name].start()
@@ -130,10 +128,10 @@ class Disp32x8Manager(Plugin):
                     self.log.info(u"==> Sensor '%d' value too old: %s" % (id, time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(sensor_timestamp))))
                     return "Failed"     
                 sensor_value = sensor_last['values'][0]['value_str']
-                self.log.info(u"==> 0MQ REQ/REP: Last sensor '%d' value: %s (%s)" % (id, sensor_value , time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(sensor_timestamp))))
+                self.log.info(u"==> 0MQ REP: Last sensor '%d' value: %s (%s)" % (id, sensor_value , time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(sensor_timestamp))))
                 return sensor_value
             else:
-                self.log.info(u"==> 0MQ REQ/REP: Last sensor '%d' status = FALSE" % id)
+                self.log.info(u"==> 0MQ REP: Last sensor '%d' status = FALSE" % id)
                 return "Failed"
         except AttributeError:  # Erreur rencontrée: 'NoneType' object has no attribute 'get'
             self.log.error(u"### 0MQ REQ/REP: '%s'", format(traceback.format_exc()))
@@ -149,8 +147,8 @@ class Disp32x8Manager(Plugin):
             data = msg.get_data()
             self.log.info(u"==> Received 0MQ message data: %s" % format(data))
             # INFO ==> Received 0MQ message data: {u'message': u'Bonjour', u'command_id': 49, u'type': u'center', u'device_id': 132}
-            self.osdmsg = data['message'] + self.osdmsgtype[data['type']]
-            self.log.info(u"==> Message = '%s'" % self.osdmsg)
+            self.display.osdmsg = data['message'] + self.osdmsgtype[data['type']]
+            self.log.info(u"==> Message = '%s'" % self.display.osdmsg)
 
             status = True
             reason = None

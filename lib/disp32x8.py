@@ -75,6 +75,7 @@ class Disp32x8:
         self.displayip = ip
         self.displayport = port
         self.getsensorvalue = getsensorvalue
+        self.osdmsg = ""
 
         self.log.info("==> Open Dips32x8 board UDP socket...")
         try:
@@ -138,7 +139,7 @@ class Disp32x8:
             return ""
 
 
-    def run(self, tempintsensorid, tempextsensorid, rainsensorid, osdmsg):
+    def run(self, tempintsensorid, tempextsensorid, rainsensorid):
         """ 
         """        
         secondes_courantes = 60
@@ -154,10 +155,10 @@ class Disp32x8:
             heuresminutes = maintenant.strftime("%k:%M")
             if secondes_courantes != secondes :
                 #print "==> Seconde : %d" % secondes
-                if osdmsg != "" :
-                    self.log.info(u"==> Demande d'affichage message texte '%s'" % osdmsg)
-                    self.write(msg)                                          # Write message to the Disp32x8 board
-                    osdmsg = ""
+                if self.osdmsg != "" :
+                    self.log.info(u"==> Demande d'affichage message texte '%s'" % self.osdmsg)
+                    self.write(self.osdmsg)                                          # Write message to the Disp32x8 board
+                    self.osdmsg = ""
                     maintenant = datetime.datetime.now()                     # Relit l'heure si message long
                     heuresminutes = maintenant.strftime("%k:%M")
                     self.write(heuresminutes + "#" + "\n")                   # Write message to the Disp32x8 board
