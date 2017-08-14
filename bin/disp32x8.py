@@ -146,8 +146,8 @@ class Disp32x8Manager(Plugin):
         if msg.get_action() == "client.cmd":
             data = msg.get_data()
             self.log.info(u"==> Received 0MQ message data: %s" % format(data))
-            # INFO ==> Received 0MQ message data: {u'message': u'Bonjour', u'command_id': 49, u'type': u'center', u'device_id': 132}
-            self.display.osdmsg = data['message'] + self.osdmsgtype[data['type']]
+            # INFO ==> Received 0MQ message data: {u'message': u'Bonjour', u'command_id': 49, u'position': u'center', u'device_id': 132}
+            self.display.osdmsg = data['message'] + self.osdmsgtype[data['position']]
             self.log.info(u"==> Message = '%s'" % self.display.osdmsg)
 
             status = True
