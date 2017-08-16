@@ -40,7 +40,7 @@ $ wget -qO- "http://hermes:40406/rest/cmd/id/49?message=100,50,300&type=beep"
 import os
 import traceback
 import time
-import datetime
+from datetime import datetime
 import locale
 import socket
 import traceback
@@ -149,36 +149,29 @@ class Disp32x8:
         locale_fr = locale.setlocale(locale.LC_ALL, '')
 
         while not self.stop.isSet():
-            maintenant = datetime.datetime.now()
-            secondes = maintenant.second
-            minutes  = maintenant.minute
-            heuresminutes = maintenant.strftime("%k:%M")
-            if secondes_courantes != secondes :
+            if secondes_courantes != datetime.now().second:
                 #print "==> Seconde : %d" % secondes
-                if self.osdmsg != "" :
-                    self.log.info(u"==> Demande d'affichage message texte '%s'" % self.osdmsg)
-                    self.write(self.osdmsg)                                          # Write message to the Disp32x8 board
-                    self.osdmsg = ""
-                    maintenant = datetime.datetime.now()                     # Relit l'heure si message long
-                    heuresminutes = maintenant.strftime("%k:%M")
-                    self.write(heuresminutes + "#" + "\n")                   # Write message to the Disp32x8 board
-                if (secondes == 0) or (secondes_courantes == 60) :           # Affichage heure
-                    self.log.debug(u"==> Heure: '%s'" % heuresminutes)
-                    msg_heure = heuresminutes + "#" + "\n"
-                    time.sleep(1)                                            # C'est l'Arduino qui affiche l'heure 0 seconde, tempo pour ne pas ecraser si decaloge.
-                if secondes == offset_affichage * 1 :                        # Affichage TEMP_INT
+                secondes_courantes = datetime.now().second
+                if secondes_courantes == 0:                                     # Affichage heure
+                    self.log.debug(u"==> Heure: '%s'" % datetime.now().strftime("%k:%M"))
+                    time.sleep(1)                                               # C'est l'Arduino qui affiche l'heure 0 seconde, tempo pour ne pas ecraser si decaloge.
+                if secondes_courantes == offset_affichage * 1 :                        # Affichage TEMP_INT
                     self.displayTemp(tempintsensorid)
-                if secondes == offset_affichage * 2 :                        # Affichage TEMP_EXT
+                if secondes_courantes == offset_affichage * 2 :                        # Affichage TEMP_EXT
                     self.displayTemp(tempextsensorid)
-                if secondes == offset_affichage * 3 :                        # Affichage pluvio1h
+                if secondes_courantes == offset_affichage * 3 :                        # Affichage pluvio1h
                     if self.displayRain(rainsensorid):
                         x_affichage = offset_affichage
                     else:
                         x_affichage = 0                            # A '0' si pas d'affichage pluvio1h.
-                if secondes == offset_affichage * 3 + (x_affichage) :        # Affichage heure
-                    self.log.info(u"==> Réaffichage heure '%s'" % msg_heure.rstrip())
-                    self.write(msg_heure)                              # Write message to the Disp32x8 board
-                secondes_courantes = secondes
+                if secondes_courantes == offset_affichage * 3 + (x_affichage) :        # Affichage heure
+                    self.log.info(u"==> Réaffichage heure")
+                    self.write(datetime.now().strftime("%k:%M") + "#" + "\n")          # Write message to the Disp32x8 board
+                if self.osdmsg != "" :
+                    self.log.info(u"==> Demande d'affichage message texte '%s'" % self.osdmsg)
+                    self.write(self.osdmsg)                                          # Write message to the Disp32x8 board
+                    self.osdmsg = ""
+                    self.write(datetime.now().strftime("%k:%M")  + "#" + "\n")  # Write message to the Disp32x8 board
             time.sleep(0.9)
 
         self.displaysocket.close()
